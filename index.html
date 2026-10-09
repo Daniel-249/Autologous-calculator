@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>Stem Cells</title>
+    <link rel="manifest" href="./manifest.json" />
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #1f6feb;
+        --primary-dark: #164db5;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #dfe7f1;
+        --success: #0f766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(135deg, #eef5ff 0%, #f8fafc 100%);
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+      }
+
+      .page {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: min(100%, 640px);
+        padding: 14px;
+      }
+
+      .card {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(31, 111, 235, 0.08);
+        padding: 20px;
+      }
+
+      h1 {
+        margin: 0 0 14px;
+        text-align: center;
+        font-size: 1.55rem;
+        color: var(--primary-dark);
+      }
+
+      .input-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+      }
+
+      .form-group {
+        min-width: 0;
+        margin: 0;
+      }
+
+      label {
+        display: block;
+        min-height: 2.2em;
+        margin-bottom: 4px;
+        font-size: 0.86rem;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        font: inherit;
+      }
+
+      input,
+      select {
+        min-width: 0;
+        padding: 9px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        outline: none;
+      }
+
+      input[type="number"] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        margin: 0;
+        -webkit-appearance: none;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.12);
+      }
+
+      button {
+        margin-top: 12px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        padding: 11px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 10px;
+      }
+
+      #calculateBtn {
+        background: var(--primary);
+      }
+
+      #calculateBtn:hover {
+        background: var(--primary-dark);
+      }
+
+      #resetBtn {
+        background: #e5e7eb;
+        color: var(--text);
+      }
+
+      #resetBtn:hover {
+        background: #d1d5db;
+      }
+
+      .result {
+        margin-top: 0;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        padding: 10px 8px;
+        text-align: center;
+        min-width: 0;
+      }
+
+      .result-label {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .result-value {
+        margin-top: 6px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--success);
+        overflow-wrap: anywhere;
+      }
+
+      .error {
+        margin-top: 12px;
+        color: #b91c1c;
+        font-size: 0.92rem;
+        min-height: 1.2em;
+      }
+
+      .results {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .result-label {
+        line-height: 1.35;
+      }
+
+      .result-value {
+        font-size: 1.35rem;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 14px;
+        }
+
+        .input-grid {
+          gap: 8px;
+        }
+
+        .result-label {
+          font-size: 0.8rem;
+        }
+
+        .result-value {
+          font-size: 1.1rem;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="card">
+
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="procedureType">Procedure Type</label>
+            <select id="procedureType">
+              <option value="1">Autologous (MM G-CSF only)</option>
+              <option value="0">Autologous</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="leucocytes">White Blood Cell Count (LEUCOCYTES)</label>
+            <input id="leucocytes" type="number" min="0" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label for="tbv">Total Blood Volume (mL)</label>
+            <input id="tbv" type="number" min="0" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Male/Female</label>
+            <select id="gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="bloodVolumes">Blood Volumes</label>
+            <input id="bloodVolumes" type="number" min="0" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" min="0" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label for="bloodToBeProcessed">Blood To Be Processed (mL)</label>
+            <input id="bloodToBeProcessed" type="number" min="0" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label for="height">Height (cm)</label>
+            <input id="height" type="number" min="0" step="any" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="calculateBtn">Calculate Cycles</button>
+          <button type="button" id="resetBtn">Reset</button>
+        </div>
+        <div id="error" class="error" role="alert"></div>
+
+        <div class="results" aria-live="polite">
+          <div class="result">
+            <div class="result-label">Total Blood Volume</div>
+            <div class="result-value" id="tbvOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Blood Volumes</div>
+            <div class="result-value" id="bloodVolumesOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Blood To Be Processed</div>
+            <div class="result-value" id="bloodToBeProcessedOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">WB Per Cycle</div>
+            <div class="result-value" id="wbPerCycleOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Cycles</div>
+            <div class="result-value" id="cyclesOutput">--</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const calculateBtn = document.getElementById('calculateBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const procedureTypeInput = document.getElementById('procedureType');
+      const leucocytesInput = document.getElementById('leucocytes');
+      const tbvInput = document.getElementById('tbv');
+      const genderInput = document.getElementById('gender');
+      const heightInput = document.getElementById('height');
+      const weightInput = document.getElementById('weight');
+      const bloodVolumesInput = document.getElementById('bloodVolumes');
+      const bloodToBeProcessedInput = document.getElementById('bloodToBeProcessed');
+      const errorBox = document.getElementById('error');
+      const tbvOutput = document.getElementById('tbvOutput');
+      const bloodVolumesOutput = document.getElementById('bloodVolumesOutput');
+      const bloodToBeProcessedOutput = document.getElementById('bloodToBeProcessedOutput');
+      const wbPerCycleOutput = document.getElementById('wbPerCycleOutput');
+      const cyclesOutput = document.getElementById('cyclesOutput');
+
+      const lookupData = {
+        rowKeys: ['ROW1', 'ROW2', 'ROW3', 'ROW4', 'ROW5', 'ROW6', 'ROW7', 'ROW8', 'ROW9', 'ROW10'],
+        columnKeys: ['COL1', 'COL2', 'COL3', 'COL4'],
+        cells: {
+          ROW1: { COL1: [1100, 7.0, 90], COL2: [1100, 8.0, 60], COL3: [1100, 6.8, 90], COL4: [1500, 5.0, 90] },
+          ROW2: { COL1: [1000, 7.0, 85], COL2: [1000, 8.0, 60], COL3: [1000, 6.8, 80], COL4: [1500, 5.0, 80] },
+          ROW3: { COL1: [900, 7.0, 75], COL2: [900, 8.0, 60], COL3: [900, 6.8, 75], COL4: [1400, 5.0, 75] },
+          ROW4: { COL1: [700, 7.0, 75], COL2: [700, 8.0, 60], COL3: [700, 6.5, 75], COL4: [1400, 5.0, 75] },
+          ROW5: { COL1: [600, 6.5, 70], COL2: [600, 8.0, 60], COL3: [600, 6.5, 70], COL4: [1400, 5.0, 70] },
+          ROW6: { COL1: [600, 6.5, 65], COL2: [600, 8.0, 60], COL3: [600, 6.5, 70], COL4: [1300, 5.0, 70] },
+          ROW7: { COL1: [600, 6.5, 65], COL2: [600, 8.0, 60], COL3: [600, 6.3, 65], COL4: [1300, 5.0, 65] },
+          ROW8: { COL1: [600, 6.5, 60], COL2: [600, 8.0, 60], COL3: [500, 6.3, 60], COL4: [1200, 5.0, 60] },
+          ROW9: { COL1: [550, 6.5, 60], COL2: [550, 8.0, 60], COL3: [500, 6.3, 60], COL4: [1100, 5.0, 60] },
+          ROW10: { COL1: [500, 6.5, 60], COL2: [550, 8.0, 60], COL3: [500, 6.3, 60], COL4: [1000, 5.0, 60] }
+        }
+      };
+
+      function calculateTBV(gender, heightCm, weightKg) {
+        const heightM = heightCm / 100;
+
+        if (gender === 'male') {
+          return 0.3669 * Math.pow(heightM, 3) + 0.03219 * weightKg + 0.6041;
+        }
+
+        return 0.3561 * Math.pow(heightM, 3) + 0.03308 * weightKg + 0.1833;
+      }
+
+      function readNumber(input, allowZero = false) {
+        if (input.value.trim() === '') return null;
+        const value = Number(input.value);
+        return Number.isFinite(value) && (allowZero ? value >= 0 : value > 0) ? value : NaN;
+      }
+
+      function getWbRow(leucocytes) {
+        if (leucocytes < 5) return 'ROW1';
+        if (leucocytes <= 10) return 'ROW2';
+        if (leucocytes <= 20) return 'ROW3';
+        if (leucocytes <= 30) return 'ROW4';
+        if (leucocytes <= 40) return 'ROW5';
+        if (leucocytes <= 50) return 'ROW6';
+        if (leucocytes <= 60) return 'ROW7';
+        if (leucocytes <= 80) return 'ROW8';
+        if (leucocytes <= 100) return 'ROW9';
+        return 'ROW10';
+      }
+
+      function clearResults() {
+        tbvOutput.textContent = '--';
+        bloodVolumesOutput.textContent = '--';
+        bloodToBeProcessedOutput.textContent = '--';
+        wbPerCycleOutput.textContent = '--';
+        cyclesOutput.textContent = '--';
+      }
+
+      function calculate() {
+        errorBox.textContent = '';
+        clearResults();
+
+        const leucocytes = readNumber(leucocytesInput, true);
+        const manualTbv = readNumber(tbvInput);
+        const bloodVolumes = readNumber(bloodVolumesInput);
+        const manualBloodToBeProcessed = readNumber(bloodToBeProcessedInput);
+        if ([leucocytes, manualTbv, bloodVolumes, manualBloodToBeProcessed].some(Number.isNaN)) {
+          errorBox.textContent = 'Entered values must be greater than zero.';
+          return;
+        }
+        if (leucocytes === null) {
+          errorBox.textContent = 'Enter a white blood cell count.';
+          return;
+        }
+
+        const height = readNumber(heightInput);
+        const weight = readNumber(weightInput);
+        if ([height, weight].some(Number.isNaN)) {
+          errorBox.textContent = 'Height and weight must be greater than zero when provided.';
+          return;
+        }
+
+        let tbv = manualTbv;
+        if (tbv === null && height !== null && weight !== null) {
+          tbv = calculateTBV(genderInput.value, height, weight) * 1000;
+          tbvInput.value = tbv.toFixed(0);
+        }
+
+        if (manualBloodToBeProcessed === null && (tbv === null || bloodVolumes === null)) {
+          errorBox.textContent = 'Enter Blood To Be Processed, or provide Total Blood Volume and Blood Volumes.';
+          return;
+        }
+
+        const bloodToBeProcessed = manualBloodToBeProcessed ?? tbv * bloodVolumes;
+        let resolvedBloodVolumes = bloodVolumes;
+        if (resolvedBloodVolumes === null && tbv !== null) {
+          resolvedBloodVolumes = bloodToBeProcessed / tbv;
+          bloodVolumesInput.value = resolvedBloodVolumes.toFixed(2);
+        }
+
+        const rowKey = getWbRow(leucocytes);
+        const columnKey = `COL${Number(procedureTypeInput.value) + 1}`;
+        const wbPerCycle = lookupData.cells[rowKey]?.[columnKey]?.[0];
+        if (!Number.isFinite(wbPerCycle) || wbPerCycle <= 0) {
+          errorBox.textContent = `No WB-per-cycle value is available for ${rowKey}, ${columnKey}.`;
+          return;
+        }
+
+        tbvOutput.textContent = tbv === null ? '--' : `${tbv.toFixed(0)} mL`;
+        bloodVolumesOutput.textContent = resolvedBloodVolumes === null ? '--' : resolvedBloodVolumes.toFixed(2);
+        bloodToBeProcessedOutput.textContent = `${bloodToBeProcessed.toFixed(0)} mL`;
+        wbPerCycleOutput.textContent = `${wbPerCycle}`;
+        cyclesOutput.textContent = (bloodToBeProcessed / wbPerCycle).toFixed(2);
+      }
+
+      function resetForm() {
+        procedureTypeInput.value = '1';
+        genderInput.value = 'male';
+        leucocytesInput.value = '';
+        tbvInput.value = '';
+        heightInput.value = '';
+        weightInput.value = '';
+        bloodVolumesInput.value = '';
+        bloodToBeProcessedInput.value = '';
+        errorBox.textContent = '';
+        clearResults();
+      }
+
+      calculateBtn.addEventListener('click', calculate);
+      resetBtn.addEventListener('click', resetForm);
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>
