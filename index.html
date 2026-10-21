@@ -35,12 +35,44 @@
 
       .page {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: center;
         justify-content: center;
         flex-wrap: wrap;
         width: min(100%, 640px);
         padding: 14px;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1.25fr 1.25fr;
+        gap: 4px;
+        width: 100%;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #e9eef5;
+      }
+
+      .tab-button {
+        min-height: 54px;
+        margin: 0;
+        padding: 8px 6px;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.83rem;
+        line-height: 1.2;
+      }
+
+      .tab-button[aria-selected="true"] {
+        background: #fff;
+        color: var(--primary-dark);
+        box-shadow: 0 1px 4px rgba(31, 41, 55, 0.12);
+      }
+
+      .tab-panel[hidden] {
+        display: none;
       }
 
       .card {
@@ -131,20 +163,28 @@
         gap: 10px;
       }
 
-      #calculateBtn {
+      .actions button {
+        margin-top: 12px;
+      }
+
+      #calculateBtn,
+      #calculateTargetBtn {
         background: var(--primary);
       }
 
-      #calculateBtn:hover {
+      #calculateBtn:hover,
+      #calculateTargetBtn:hover {
         background: var(--primary-dark);
       }
 
-      #resetBtn {
+      #resetBtn,
+      #resetTargetBtn {
         background: #e5e7eb;
         color: var(--text);
       }
 
-      #resetBtn:hover {
+      #resetBtn:hover,
+      #resetTargetBtn:hover {
         background: #d1d5db;
       }
 
@@ -216,8 +256,14 @@
   </head>
   <body>
     <main class="page">
-      <section class="card">
+      <div class="tabs" role="tablist" aria-label="Calculators">
+        <button class="tab-button" id="tbvTab" type="button" role="tab" aria-selected="true" aria-controls="tbvPanel" tabindex="0">Total Blood Volume</button>
+        <button class="tab-button" id="apheresisTab" type="button" role="tab" aria-selected="false" aria-controls="apheresisPanel" tabindex="-1">Apheresis Estimate to Target</button>
+        <button class="tab-button" id="cellCollectionTab" type="button" role="tab" aria-selected="false" aria-controls="cellCollectionPanel" tabindex="-1">Total Cell Collection Estimate</button>
+      </div>
 
+      <section class="card tab-panel" id="tbvPanel" role="tabpanel" aria-labelledby="tbvTab">
+        <h1>Total Blood Volume</h1>
         <div class="input-grid">
           <div class="form-group">
             <label for="procedureType">Procedure Type</label>
@@ -226,17 +272,14 @@
               <option value="0">Autologous</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="leucocytes">White Blood Cell Count (LEUCOCYTES)</label>
             <input id="leucocytes" type="number" min="0" step="any" />
           </div>
-
           <div class="form-group">
             <label for="tbv">Total Blood Volume (mL)</label>
             <input id="tbv" type="number" min="0" step="any" />
           </div>
-
           <div class="form-group">
             <label for="gender">Male/Female</label>
             <select id="gender">
@@ -244,34 +287,28 @@
               <option value="female">Female</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="bloodVolumes">Blood Volumes</label>
             <input id="bloodVolumes" type="number" min="0" step="any" />
           </div>
-
           <div class="form-group">
             <label for="weight">Weight (kg)</label>
             <input id="weight" type="number" min="0" step="any" />
           </div>
-
           <div class="form-group">
             <label for="bloodToBeProcessed">Blood To Be Processed (mL)</label>
             <input id="bloodToBeProcessed" type="number" min="0" step="any" />
           </div>
-
           <div class="form-group">
             <label for="height">Height (cm)</label>
             <input id="height" type="number" min="0" step="any" />
           </div>
         </div>
-
         <div class="actions">
           <button type="button" id="calculateBtn">Calculate Cycles</button>
           <button type="button" id="resetBtn">Reset</button>
         </div>
         <div id="error" class="error" role="alert"></div>
-
         <div class="results" aria-live="polite">
           <div class="result">
             <div class="result-label">Total Blood Volume</div>
@@ -295,9 +332,76 @@
           </div>
         </div>
       </section>
+
+      <section class="card tab-panel" id="apheresisPanel" role="tabpanel" aria-labelledby="apheresisTab" hidden>
+        <h1>Apheresis Estimate to Target</h1>
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="targetSex">Sex</label>
+            <select id="targetSex">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="targetHeight">Height (cm)</label>
+            <input id="targetHeight" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="measuredWeight">Measured Weight (kg)</label>
+            <input id="measuredWeight" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="cd34Target">CD34 Target (x10^6/kg)</label>
+            <input id="cd34Target" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="flowCytometryCount">Flow Cytometry CD34 Count (x10^6/L)</label>
+            <input id="flowCytometryCount" type="number" min="0" step="any" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="calculateTargetBtn">Calculate Estimate</button>
+          <button type="button" id="resetTargetBtn">Reset</button>
+        </div>
+        <div id="targetError" class="error" role="alert"></div>
+        <div class="results" aria-live="polite">
+          <div class="result">
+            <div class="result-label">BMI</div>
+            <div class="result-value" id="bmiOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Ideal Weight</div>
+            <div class="result-value" id="idealWeightOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Adjusted Weight</div>
+            <div class="result-value" id="adjustedWeightOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Total Blood Volume</div>
+            <div class="result-value" id="targetTbvOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Blood To Be Processed</div>
+            <div class="result-value" id="targetBloodProcessedOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Volumes Wanted</div>
+            <div class="result-value" id="volumesWantedOutput">--</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card tab-panel" id="cellCollectionPanel" role="tabpanel" aria-labelledby="cellCollectionTab" hidden>
+        <h1>Total Cell Collection Estimate</h1>
+        <p>Inputs and calculation details have not been specified yet.</p>
+      </section>
     </main>
 
     <script>
+      const tabButtons = [...document.querySelectorAll('[role="tab"]')];
+      const tabPanels = [...document.querySelectorAll('[role="tabpanel"]')];
       const calculateBtn = document.getElementById('calculateBtn');
       const resetBtn = document.getElementById('resetBtn');
       const procedureTypeInput = document.getElementById('procedureType');
@@ -314,7 +418,20 @@
       const bloodToBeProcessedOutput = document.getElementById('bloodToBeProcessedOutput');
       const wbPerCycleOutput = document.getElementById('wbPerCycleOutput');
       const cyclesOutput = document.getElementById('cyclesOutput');
-
+      const targetSexInput = document.getElementById('targetSex');
+      const targetHeightInput = document.getElementById('targetHeight');
+      const measuredWeightInput = document.getElementById('measuredWeight');
+      const cd34TargetInput = document.getElementById('cd34Target');
+      const flowCytometryCountInput = document.getElementById('flowCytometryCount');
+      const calculateTargetBtn = document.getElementById('calculateTargetBtn');
+      const resetTargetBtn = document.getElementById('resetTargetBtn');
+      const targetErrorBox = document.getElementById('targetError');
+      const bmiOutput = document.getElementById('bmiOutput');
+      const idealWeightOutput = document.getElementById('idealWeightOutput');
+      const adjustedWeightOutput = document.getElementById('adjustedWeightOutput');
+      const targetTbvOutput = document.getElementById('targetTbvOutput');
+      const targetBloodProcessedOutput = document.getElementById('targetBloodProcessedOutput');
+      const volumesWantedOutput = document.getElementById('volumesWantedOutput');
       const lookupData = {
         rowKeys: ['ROW1', 'ROW2', 'ROW3', 'ROW4', 'ROW5', 'ROW6', 'ROW7', 'ROW8', 'ROW9', 'ROW10'],
         columnKeys: ['COL1', 'COL2', 'COL3', 'COL4'],
@@ -332,13 +449,36 @@
         }
       };
 
+      function activateTab(selectedTab) {
+        const selectedPanelId = selectedTab.getAttribute('aria-controls');
+        tabButtons.forEach((tab) => {
+          const selected = tab === selectedTab;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        tabPanels.forEach((panel) => {
+          panel.hidden = panel.id !== selectedPanelId;
+        });
+      }
+
+      tabButtons.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab));
+        tab.addEventListener('keydown', (event) => {
+          let nextIndex = index;
+          if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabButtons.length;
+          else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabButtons.length) % tabButtons.length;
+          else return;
+          event.preventDefault();
+          tabButtons[nextIndex].focus();
+          activateTab(tabButtons[nextIndex]);
+        });
+      });
+
       function calculateTBV(gender, heightCm, weightKg) {
         const heightM = heightCm / 100;
-
         if (gender === 'male') {
           return 0.3669 * Math.pow(heightM, 3) + 0.03219 * weightKg + 0.6041;
         }
-
         return 0.3561 * Math.pow(heightM, 3) + 0.03308 * weightKg + 0.1833;
       }
 
@@ -439,8 +579,75 @@
         clearResults();
       }
 
+      function clearTargetResults() {
+        bmiOutput.textContent = '--';
+        idealWeightOutput.textContent = '--';
+        adjustedWeightOutput.textContent = '--';
+        targetTbvOutput.textContent = '--';
+        targetBloodProcessedOutput.textContent = '--';
+        volumesWantedOutput.textContent = '--';
+      }
+
+      function calculateTargetEstimate() {
+        targetErrorBox.textContent = '';
+        clearTargetResults();
+
+        const height = readNumber(targetHeightInput);
+        const measuredWeight = readNumber(measuredWeightInput);
+        const cd34Target = readNumber(cd34TargetInput);
+        const flowCytometryCount = readNumber(flowCytometryCountInput);
+        if ([height, measuredWeight, cd34Target, flowCytometryCount].some(Number.isNaN) ||
+            [height, measuredWeight, cd34Target, flowCytometryCount].some((value) => value === null)) {
+          targetErrorBox.textContent = 'Enter valid positive values for all fields.';
+          return;
+        }
+
+        const bmi = measuredWeight / Math.pow(height / 100, 2);
+        const idealWeight = targetSexInput.value === 'male'
+          ? 50 + (2.3 * (height - 152.4) / 2.54)
+          : 40.5 + (2.3 * (height - 152.4) / 2.54);
+        const adjustedWeight = measuredWeight > idealWeight
+          ? idealWeight + (0.4 * (measuredWeight - idealWeight))
+          : measuredWeight;
+
+        let weightForTarget;
+        if (measuredWeight < idealWeight) {
+          weightForTarget = idealWeight;
+        } else if (bmi > 100) {
+          weightForTarget = adjustedWeight;
+        } else if (bmi < 100) {
+          weightForTarget = measuredWeight;
+        } else {
+          targetErrorBox.textContent = 'No weight rule is specified for a BMI of exactly 100.';
+          return;
+        }
+
+        const bloodToBeProcessedLiters = cd34Target * weightForTarget / (flowCytometryCount * 0.32);
+        const tbvLiters = calculateTBV(targetSexInput.value, height, measuredWeight);
+        const bloodToBeProcessedMl = bloodToBeProcessedLiters * 1000;
+
+        bmiOutput.textContent = bmi.toFixed(2);
+        idealWeightOutput.textContent = `${idealWeight.toFixed(2)} kg`;
+        adjustedWeightOutput.textContent = `${adjustedWeight.toFixed(2)} kg`;
+        targetTbvOutput.textContent = `${(tbvLiters * 1000).toFixed(0)} mL`;
+        targetBloodProcessedOutput.textContent = `${bloodToBeProcessedMl.toFixed(0)} mL`;
+        volumesWantedOutput.textContent = (bloodToBeProcessedLiters / tbvLiters).toFixed(2);
+      }
+
+      function resetTargetEstimate() {
+        targetSexInput.value = 'male';
+        targetHeightInput.value = '';
+        measuredWeightInput.value = '';
+        cd34TargetInput.value = '';
+        flowCytometryCountInput.value = '';
+        targetErrorBox.textContent = '';
+        clearTargetResults();
+      }
+
       calculateBtn.addEventListener('click', calculate);
       resetBtn.addEventListener('click', resetForm);
+      calculateTargetBtn.addEventListener('click', calculateTargetEstimate);
+      resetTargetBtn.addEventListener('click', resetTargetEstimate);
     </script>
     <script>
       if ('serviceWorker' in navigator) {
