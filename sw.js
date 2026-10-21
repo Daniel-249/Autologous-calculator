@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tbv-calculator-v2';
+const CACHE_NAME = 'tbv-calculator-v3';
 const PAGE_URL = './index.html';
 const APP_SHELL = [
   PAGE_URL,
@@ -33,25 +33,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          const responseCopy = response.clone();
-          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy)));
-        }
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, response.clone());
         return response;
-      })
-      .catch(async () => {
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) return cachedResponse;
+      }
 
-        if (request.mode === 'navigate') {
-          const cachedPage = await caches.match(PAGE_URL);
-          if (cachedPage) return cachedPage;
-        }
-
-        return Response.error();
-      })
-  );
+      const cachedResponse = await getCachedResponse(request);
+      return cachedResponse ?? response;
+    } catch {
+      return await getCachedResponse(request) ?? Response.error();
+    }
+  })());
 });
+
+async function getCachedResponse(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) return cachedResponse;
+
+  if (request.mode === 'navigate') {
+    return caches.match(PAGE_URL);
+  }
+
+  return undefined;
+}
