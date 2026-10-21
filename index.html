@@ -27,20 +27,15 @@
         font-family: Arial, Helvetica, sans-serif;
         background: linear-gradient(135deg, #eef5ff 0%, #f8fafc 100%);
         min-height: 100svh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         color: var(--text);
       }
 
       .page {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        width: min(100%, 640px);
-        padding: 14px;
+        display: grid;
+        gap: 12px;
+        width: min(100%, 1500px);
+        margin: 0 auto;
+        padding: 16px;
       }
 
       .tabs {
@@ -73,6 +68,19 @@
 
       .tab-panel[hidden] {
         display: none;
+      }
+
+      .patient-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px 12px;
+      }
+
+      .calculator-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
       }
 
       .card {
@@ -168,23 +176,27 @@
       }
 
       #calculateBtn,
-      #calculateTargetBtn {
+      #calculateTargetBtn,
+      #calculateCollectionBtn {
         background: var(--primary);
       }
 
       #calculateBtn:hover,
-      #calculateTargetBtn:hover {
+      #calculateTargetBtn:hover,
+      #calculateCollectionBtn:hover {
         background: var(--primary-dark);
       }
 
       #resetBtn,
-      #resetTargetBtn {
+      #resetTargetBtn,
+      #resetCollectionBtn {
         background: #e5e7eb;
         color: var(--text);
       }
 
       #resetBtn:hover,
-      #resetTargetBtn:hover {
+      #resetTargetBtn:hover,
+      #resetCollectionBtn:hover {
         background: #d1d5db;
       }
 
@@ -218,11 +230,22 @@
         min-height: 1.2em;
       }
 
+      .weight-basis {
+        margin-top: 12px;
+        color: var(--primary-dark);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
       .results {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         margin-top: 12px;
+      }
+
+      .collection-result {
+        grid-column: 1 / -1;
       }
 
       .result-label {
@@ -235,8 +258,16 @@
       }
 
       @media (max-width: 480px) {
+        .page {
+          padding: 10px;
+        }
+
         .card {
           padding: 14px;
+        }
+
+        .patient-grid {
+          gap: 8px;
         }
 
         .input-grid {
@@ -252,16 +283,49 @@
         }
       }
 
+      @media (min-width: 1100px) {
+        .tabs {
+          display: none;
+        }
+
+        .calculator-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+      }
+
     </style>
   </head>
   <body>
     <main class="page">
+      <section class="card patient-panel" aria-labelledby="patientHeading">
+        <h1 id="patientHeading">Patient</h1>
+        <div class="patient-grid">
+          <div class="form-group">
+            <label for="gender">Sex</label>
+            <select id="gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="height">Height (cm)</label>
+            <input id="height" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" min="0" step="any" />
+          </div>
+        </div>
+      </section>
+
       <div class="tabs" role="tablist" aria-label="Calculators">
         <button class="tab-button" id="tbvTab" type="button" role="tab" aria-selected="true" aria-controls="tbvPanel" tabindex="0">Total Blood Volume</button>
         <button class="tab-button" id="apheresisTab" type="button" role="tab" aria-selected="false" aria-controls="apheresisPanel" tabindex="-1">Apheresis Estimate to Target</button>
         <button class="tab-button" id="cellCollectionTab" type="button" role="tab" aria-selected="false" aria-controls="cellCollectionPanel" tabindex="-1">Total Cell Collection Estimate</button>
       </div>
 
+      <div class="calculator-grid">
       <section class="card tab-panel" id="tbvPanel" role="tabpanel" aria-labelledby="tbvTab">
         <h1>Total Blood Volume</h1>
         <div class="input-grid">
@@ -273,7 +337,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="leucocytes">White Blood Cell Count (LEUCOCYTES)</label>
+            <label for="leucocytes">White Blood Cell Count</label>
             <input id="leucocytes" type="number" min="0" step="any" />
           </div>
           <div class="form-group">
@@ -281,27 +345,12 @@
             <input id="tbv" type="number" min="0" step="any" />
           </div>
           <div class="form-group">
-            <label for="gender">Male/Female</label>
-            <select id="gender">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div class="form-group">
             <label for="bloodVolumes">Blood Volumes</label>
             <input id="bloodVolumes" type="number" min="0" step="any" />
           </div>
           <div class="form-group">
-            <label for="weight">Weight (kg)</label>
-            <input id="weight" type="number" min="0" step="any" />
-          </div>
-          <div class="form-group">
-            <label for="bloodToBeProcessed">Blood To Be Processed (mL)</label>
+            <label for="bloodToBeProcessed">Total Blood To Be Processed (mL)</label>
             <input id="bloodToBeProcessed" type="number" min="0" step="any" />
-          </div>
-          <div class="form-group">
-            <label for="height">Height (cm)</label>
-            <input id="height" type="number" min="0" step="any" />
           </div>
         </div>
         <div class="actions">
@@ -319,7 +368,7 @@
             <div class="result-value" id="bloodVolumesOutput">--</div>
           </div>
           <div class="result">
-            <div class="result-label">Blood To Be Processed</div>
+            <div class="result-label">Total Blood To Be Processed</div>
             <div class="result-value" id="bloodToBeProcessedOutput">--</div>
           </div>
           <div class="result">
@@ -330,27 +379,16 @@
             <div class="result-label">Cycles</div>
             <div class="result-value" id="cyclesOutput">--</div>
           </div>
+          <div class="result">
+            <div class="result-label">Estimated Time</div>
+            <div class="result-value" id="timeOutput">--</div>
+          </div>
         </div>
       </section>
 
       <section class="card tab-panel" id="apheresisPanel" role="tabpanel" aria-labelledby="apheresisTab" hidden>
         <h1>Apheresis Estimate to Target</h1>
         <div class="input-grid">
-          <div class="form-group">
-            <label for="targetSex">Sex</label>
-            <select id="targetSex">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="targetHeight">Height (cm)</label>
-            <input id="targetHeight" type="number" min="0" step="any" />
-          </div>
-          <div class="form-group">
-            <label for="measuredWeight">Measured Weight (kg)</label>
-            <input id="measuredWeight" type="number" min="0" step="any" />
-          </div>
           <div class="form-group">
             <label for="cd34Target">CD34 Target (x10^6/kg)</label>
             <input id="cd34Target" type="number" min="0" step="any" />
@@ -365,6 +403,7 @@
           <button type="button" id="resetTargetBtn">Reset</button>
         </div>
         <div id="targetError" class="error" role="alert"></div>
+        <div class="weight-basis" id="weightBasisOutput" aria-live="polite">Weight Used: --</div>
         <div class="results" aria-live="polite">
           <div class="result">
             <div class="result-label">BMI</div>
@@ -395,8 +434,33 @@
 
       <section class="card tab-panel" id="cellCollectionPanel" role="tabpanel" aria-labelledby="cellCollectionTab" hidden>
         <h1>Total Cell Collection Estimate</h1>
-        <p>Inputs and calculation details have not been specified yet.</p>
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="sampleVolume">Sample Volume (mL)</label>
+            <input id="sampleVolume" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="sampleCellConcentration">Sample Stem Cells (million/L)</label>
+            <input id="sampleCellConcentration" type="number" min="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="finalProductVolume">Final Product Volume (mL)</label>
+            <input id="finalProductVolume" type="number" min="0" step="any" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="calculateCollectionBtn">Calculate Estimate</button>
+          <button type="button" id="resetCollectionBtn">Reset</button>
+        </div>
+        <div id="collectionError" class="error" role="alert"></div>
+        <div class="results" aria-live="polite">
+          <div class="result collection-result">
+            <div class="result-label">Stem Cells (million/kg)</div>
+            <div class="result-value" id="cellDoseOutput">--</div>
+          </div>
+        </div>
       </section>
+      </div>
     </main>
 
     <script>
@@ -418,20 +482,28 @@
       const bloodToBeProcessedOutput = document.getElementById('bloodToBeProcessedOutput');
       const wbPerCycleOutput = document.getElementById('wbPerCycleOutput');
       const cyclesOutput = document.getElementById('cyclesOutput');
-      const targetSexInput = document.getElementById('targetSex');
-      const targetHeightInput = document.getElementById('targetHeight');
-      const measuredWeightInput = document.getElementById('measuredWeight');
+      const timeOutput = document.getElementById('timeOutput');
       const cd34TargetInput = document.getElementById('cd34Target');
       const flowCytometryCountInput = document.getElementById('flowCytometryCount');
       const calculateTargetBtn = document.getElementById('calculateTargetBtn');
       const resetTargetBtn = document.getElementById('resetTargetBtn');
       const targetErrorBox = document.getElementById('targetError');
+      const weightBasisOutput = document.getElementById('weightBasisOutput');
       const bmiOutput = document.getElementById('bmiOutput');
       const idealWeightOutput = document.getElementById('idealWeightOutput');
       const adjustedWeightOutput = document.getElementById('adjustedWeightOutput');
       const targetTbvOutput = document.getElementById('targetTbvOutput');
       const targetBloodProcessedOutput = document.getElementById('targetBloodProcessedOutput');
       const volumesWantedOutput = document.getElementById('volumesWantedOutput');
+      const sampleVolumeInput = document.getElementById('sampleVolume');
+      const sampleCellConcentrationInput = document.getElementById('sampleCellConcentration');
+      const finalProductVolumeInput = document.getElementById('finalProductVolume');
+      const calculateCollectionBtn = document.getElementById('calculateCollectionBtn');
+      const resetCollectionBtn = document.getElementById('resetCollectionBtn');
+      const collectionErrorBox = document.getElementById('collectionError');
+      const cellDoseOutput = document.getElementById('cellDoseOutput');
+      const desktopLayout = window.matchMedia('(min-width: 1100px)');
+      let activePanelId = 'tbvPanel';
       const lookupData = {
         rowKeys: ['ROW1', 'ROW2', 'ROW3', 'ROW4', 'ROW5', 'ROW6', 'ROW7', 'ROW8', 'ROW9', 'ROW10'],
         columnKeys: ['COL1', 'COL2', 'COL3', 'COL4'],
@@ -449,17 +521,24 @@
         }
       };
 
+      function updatePanelVisibility() {
+        tabPanels.forEach((panel) => {
+          panel.hidden = !desktopLayout.matches && panel.id !== activePanelId;
+        });
+      }
+
       function activateTab(selectedTab) {
-        const selectedPanelId = selectedTab.getAttribute('aria-controls');
+        activePanelId = selectedTab.getAttribute('aria-controls');
         tabButtons.forEach((tab) => {
           const selected = tab === selectedTab;
           tab.setAttribute('aria-selected', String(selected));
           tab.tabIndex = selected ? 0 : -1;
         });
-        tabPanels.forEach((panel) => {
-          panel.hidden = panel.id !== selectedPanelId;
-        });
+        updatePanelVisibility();
       }
+
+      desktopLayout.addEventListener('change', updatePanelVisibility);
+      updatePanelVisibility();
 
       tabButtons.forEach((tab, index) => {
         tab.addEventListener('click', () => activateTab(tab));
@@ -507,6 +586,7 @@
         bloodToBeProcessedOutput.textContent = '--';
         wbPerCycleOutput.textContent = '--';
         cyclesOutput.textContent = '--';
+        timeOutput.textContent = '--';
       }
 
       function calculate() {
@@ -517,19 +597,10 @@
         const manualTbv = readNumber(tbvInput);
         const bloodVolumes = readNumber(bloodVolumesInput);
         const manualBloodToBeProcessed = readNumber(bloodToBeProcessedInput);
-        if ([leucocytes, manualTbv, bloodVolumes, manualBloodToBeProcessed].some(Number.isNaN)) {
-          errorBox.textContent = 'Entered values must be greater than zero.';
-          return;
-        }
-        if (leucocytes === null) {
-          errorBox.textContent = 'Enter a white blood cell count.';
-          return;
-        }
-
         const height = readNumber(heightInput);
         const weight = readNumber(weightInput);
-        if ([height, weight].some(Number.isNaN)) {
-          errorBox.textContent = 'Height and weight must be greater than zero when provided.';
+        if ([leucocytes, manualTbv, bloodVolumes, manualBloodToBeProcessed, height, weight].some(Number.isNaN)) {
+          errorBox.textContent = 'Entered values must be greater than zero.';
           return;
         }
 
@@ -539,40 +610,47 @@
           tbvInput.value = tbv.toFixed(0);
         }
 
-        if (manualBloodToBeProcessed === null && (tbv === null || bloodVolumes === null)) {
-          errorBox.textContent = 'Enter Blood To Be Processed, or provide Total Blood Volume and Blood Volumes.';
-          return;
+        tbvOutput.textContent = tbv === null ? '--' : `${tbv.toFixed(0)} mL`;
+
+        let bloodToBeProcessed = manualBloodToBeProcessed;
+        if (bloodToBeProcessed === null && tbv !== null && bloodVolumes !== null) {
+          bloodToBeProcessed = tbv * bloodVolumes;
         }
 
-        const bloodToBeProcessed = manualBloodToBeProcessed ?? tbv * bloodVolumes;
         let resolvedBloodVolumes = bloodVolumes;
-        if (resolvedBloodVolumes === null && tbv !== null) {
+        if (resolvedBloodVolumes === null && tbv !== null && bloodToBeProcessed !== null) {
           resolvedBloodVolumes = bloodToBeProcessed / tbv;
           bloodVolumesInput.value = resolvedBloodVolumes.toFixed(2);
         }
 
-        const rowKey = getWbRow(leucocytes);
-        const columnKey = `COL${Number(procedureTypeInput.value) + 1}`;
-        const wbPerCycle = lookupData.cells[rowKey]?.[columnKey]?.[0];
-        if (!Number.isFinite(wbPerCycle) || wbPerCycle <= 0) {
-          errorBox.textContent = `No WB-per-cycle value is available for ${rowKey}, ${columnKey}.`;
-          return;
-        }
-
-        tbvOutput.textContent = tbv === null ? '--' : `${tbv.toFixed(0)} mL`;
         bloodVolumesOutput.textContent = resolvedBloodVolumes === null ? '--' : resolvedBloodVolumes.toFixed(2);
-        bloodToBeProcessedOutput.textContent = `${bloodToBeProcessed.toFixed(0)} mL`;
-        wbPerCycleOutput.textContent = `${wbPerCycle}`;
-        cyclesOutput.textContent = (bloodToBeProcessed / wbPerCycle).toFixed(2);
+        bloodToBeProcessedOutput.textContent = bloodToBeProcessed === null ? '--' : `${bloodToBeProcessed.toFixed(0)} mL`;
+
+        if (leucocytes !== null) {
+          const rowKey = getWbRow(leucocytes);
+          const columnKey = `COL${Number(procedureTypeInput.value) + 1}`;
+          const wbPerCycle = lookupData.cells[rowKey]?.[columnKey]?.[0];
+          if (!Number.isFinite(wbPerCycle) || wbPerCycle <= 0) {
+            errorBox.textContent = `No WB-per-cycle value is available for ${rowKey}, ${columnKey}.`;
+            return;
+          }
+
+          wbPerCycleOutput.textContent = `${wbPerCycle}`;
+          if (bloodToBeProcessed !== null) {
+            const cycles = bloodToBeProcessed / wbPerCycle;
+            const totalMinutes = Math.round(cycles * 15);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            cyclesOutput.textContent = cycles.toFixed(2);
+            timeOutput.textContent = `${hours} hr ${minutes} min`;
+          }
+        }
       }
 
       function resetForm() {
         procedureTypeInput.value = '1';
-        genderInput.value = 'male';
         leucocytesInput.value = '';
         tbvInput.value = '';
-        heightInput.value = '';
-        weightInput.value = '';
         bloodVolumesInput.value = '';
         bloodToBeProcessedInput.value = '';
         errorBox.textContent = '';
@@ -580,6 +658,7 @@
       }
 
       function clearTargetResults() {
+        weightBasisOutput.textContent = 'Weight Used: --';
         bmiOutput.textContent = '--';
         idealWeightOutput.textContent = '--';
         adjustedWeightOutput.textContent = '--';
@@ -592,8 +671,8 @@
         targetErrorBox.textContent = '';
         clearTargetResults();
 
-        const height = readNumber(targetHeightInput);
-        const measuredWeight = readNumber(measuredWeightInput);
+        const height = readNumber(heightInput);
+        const measuredWeight = readNumber(weightInput);
         const cd34Target = readNumber(cd34TargetInput);
         const flowCytometryCount = readNumber(flowCytometryCountInput);
         if ([height, measuredWeight, cd34Target, flowCytometryCount].some(Number.isNaN) ||
@@ -603,7 +682,7 @@
         }
 
         const bmi = measuredWeight / Math.pow(height / 100, 2);
-        const idealWeight = targetSexInput.value === 'male'
+        const idealWeight = genderInput.value === 'male'
           ? 50 + (2.3 * (height - 152.4) / 2.54)
           : 40.5 + (2.3 * (height - 152.4) / 2.54);
         const adjustedWeight = measuredWeight > idealWeight
@@ -611,21 +690,26 @@
           : measuredWeight;
 
         let weightForTarget;
+        let weightBasis;
         if (measuredWeight < idealWeight) {
           weightForTarget = idealWeight;
+          weightBasis = 'Ideal Weight';
         } else if (bmi > 100) {
           weightForTarget = adjustedWeight;
+          weightBasis = 'Adjusted Weight';
         } else if (bmi < 100) {
           weightForTarget = measuredWeight;
+          weightBasis = 'Measured Weight';
         } else {
           targetErrorBox.textContent = 'No weight rule is specified for a BMI of exactly 100.';
           return;
         }
 
         const bloodToBeProcessedLiters = cd34Target * weightForTarget / (flowCytometryCount * 0.32);
-        const tbvLiters = calculateTBV(targetSexInput.value, height, measuredWeight);
+        const tbvLiters = calculateTBV(genderInput.value, height, measuredWeight);
         const bloodToBeProcessedMl = bloodToBeProcessedLiters * 1000;
 
+        weightBasisOutput.textContent = `Weight Used: ${weightBasis}`;
         bmiOutput.textContent = bmi.toFixed(2);
         idealWeightOutput.textContent = `${idealWeight.toFixed(2)} kg`;
         adjustedWeightOutput.textContent = `${adjustedWeight.toFixed(2)} kg`;
@@ -635,19 +719,52 @@
       }
 
       function resetTargetEstimate() {
-        targetSexInput.value = 'male';
-        targetHeightInput.value = '';
-        measuredWeightInput.value = '';
         cd34TargetInput.value = '';
         flowCytometryCountInput.value = '';
         targetErrorBox.textContent = '';
         clearTargetResults();
       }
 
+      function clearCollectionResults() {
+        cellDoseOutput.textContent = '--';
+      }
+
+      function calculateCollectionEstimate() {
+        collectionErrorBox.textContent = '';
+        clearCollectionResults();
+
+        const sampleVolume = readNumber(sampleVolumeInput);
+        const sampleCellConcentration = readNumber(sampleCellConcentrationInput);
+        const finalProductVolume = readNumber(finalProductVolumeInput);
+        const patientWeight = readNumber(weightInput);
+        const values = [sampleVolume, sampleCellConcentration, finalProductVolume, patientWeight];
+        if (values.some((value) => value === null || Number.isNaN(value))) {
+          collectionErrorBox.textContent = 'Enter valid positive values for all fields.';
+          return;
+        }
+
+        const sampleCellTotal = sampleVolume * sampleCellConcentration / 1000;
+        const measuredSampleConcentration = sampleCellTotal / (sampleVolume / 1000);
+        const finalProductCellTotal = finalProductVolume * measuredSampleConcentration / 1000;
+        const cellDose = finalProductCellTotal / patientWeight;
+
+        cellDoseOutput.textContent = `${cellDose.toFixed(2)} million/kg`;
+      }
+
+      function resetCollectionEstimate() {
+        sampleVolumeInput.value = '';
+        sampleCellConcentrationInput.value = '';
+        finalProductVolumeInput.value = '';
+        collectionErrorBox.textContent = '';
+        clearCollectionResults();
+      }
+
       calculateBtn.addEventListener('click', calculate);
       resetBtn.addEventListener('click', resetForm);
       calculateTargetBtn.addEventListener('click', calculateTargetEstimate);
       resetTargetBtn.addEventListener('click', resetTargetEstimate);
+      calculateCollectionBtn.addEventListener('click', calculateCollectionEstimate);
+      resetCollectionBtn.addEventListener('click', resetCollectionEstimate);
     </script>
     <script>
       if ('serviceWorker' in navigator) {
