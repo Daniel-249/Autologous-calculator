@@ -7,6 +7,7 @@
     <title>Stem Cells</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/jpeg" sizes="192x192" href="./Icon(192).jpg" />
+    <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="./apple-touch-icon.png" />
     <style>
       :root {
         --bg: #f4f7fb;
@@ -41,7 +42,7 @@
 
       .tabs {
         display: grid;
-        grid-template-columns: 1fr 1.25fr 1.25fr;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 4px;
         width: 100%;
         padding: 4px;
@@ -195,26 +196,30 @@
 
       #calculateBtn,
       #calculateTargetBtn,
-      #calculatePrimeBtn {
+      #calculatePrimeBtn,
+      #calculateYieldBtn {
         background: var(--primary);
       }
 
       #calculateBtn:hover,
       #calculateTargetBtn:hover,
-      #calculatePrimeBtn:hover {
+      #calculatePrimeBtn:hover,
+      #calculateYieldBtn:hover {
         background: var(--primary-dark);
       }
 
       #resetBtn,
       #resetTargetBtn,
-      #resetPrimeBtn {
+      #resetPrimeBtn,
+      #resetYieldBtn {
         background: #e5e7eb;
         color: var(--text);
       }
 
       #resetBtn:hover,
       #resetTargetBtn:hover,
-      #resetPrimeBtn:hover {
+      #resetPrimeBtn:hover,
+      #resetYieldBtn:hover {
         background: #d1d5db;
       }
 
@@ -275,7 +280,35 @@
         color: #b91c1c;
       }
 
+      .yield-table-wrapper {
+        margin-top: 12px;
+        overflow-x: auto;
+      }
+
+      .yield-table {
+        width: 100%;
+        min-width: 480px;
+        border-collapse: collapse;
+        text-align: center;
+      }
+
+      .yield-table th,
+      .yield-table td {
+        padding: 8px;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+      }
+
+      .yield-table thead th,
+      .yield-table tbody th {
+        background: #e9eef5;
+      }
+
       @media (max-width: 700px) {
+        .tabs {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .patient-grid {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
@@ -318,7 +351,7 @@
         }
 
         .calculator-grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
       }
@@ -358,6 +391,7 @@
         <button class="tab-button" id="tbvTab" type="button" role="tab" aria-selected="true" aria-controls="tbvPanel" tabindex="0">No. of Cycles</button>
         <button class="tab-button" id="apheresisTab" type="button" role="tab" aria-selected="false" aria-controls="apheresisPanel" tabindex="-1">Apheresis Estimate to Target</button>
         <button class="tab-button" id="cellCollectionTab" type="button" role="tab" aria-selected="false" aria-controls="cellCollectionPanel" tabindex="-1">Apheresis Custom Prime</button>
+        <button class="tab-button" id="yieldTab" type="button" role="tab" aria-selected="false" aria-controls="yieldPanel" tabindex="-1">CD34 Yield Estimation</button>
       </div>
 
       <div class="calculator-grid">
@@ -496,6 +530,36 @@
           </div>
         </div>
       </section>
+
+      <section class="card tab-panel" id="yieldPanel" role="tabpanel" aria-labelledby="yieldTab" hidden>
+        <h1>CD34 Yield Estimation</h1>
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="peripheralCd34">Peripheral CD34</label>
+            <input id="peripheralCd34" type="number" min="0" step="any" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="calculateYieldBtn">Calculate Yield</button>
+          <button type="button" id="resetYieldBtn">Reset</button>
+        </div>
+        <div id="yieldError" class="error" role="alert"></div>
+        <div class="yield-table-wrapper" aria-live="polite">
+          <table class="yield-table">
+            <thead>
+              <tr>
+                <th scope="col">CEC</th>
+                <th scope="col">2 TBVs</th>
+                <th scope="col">3 TBVs</th>
+                <th scope="col">4 TBVs</th>
+                <th scope="col">5 TBVs</th>
+                <th scope="col">6 TBVs</th>
+              </tr>
+            </thead>
+            <tbody id="yieldTableBody"></tbody>
+          </table>
+        </div>
+      </section>
       </div>
     </main>
 
@@ -542,8 +606,15 @@
       const primeErrorBox = document.getElementById('primeError');
       const primeTbvOutput = document.getElementById('primeTbvOutput');
       const maxRbcOutOutput = document.getElementById('maxRbcOutOutput');
+      const peripheralCd34Input = document.getElementById('peripheralCd34');
+      const calculateYieldBtn = document.getElementById('calculateYieldBtn');
+      const resetYieldBtn = document.getElementById('resetYieldBtn');
+      const yieldErrorBox = document.getElementById('yieldError');
+      const yieldTableBody = document.getElementById('yieldTableBody');
       const desktopLayout = window.matchMedia('(min-width: 1100px)');
       let activePanelId = 'tbvPanel';
+      const yieldEfficiencies = [0.4, 0.35, 0.3, 0.25, 0.2, 0.15];
+      const yieldBloodVolumeCounts = [2, 3, 4, 5, 6];
 
       const customPrimeConstants = {
         kitWbVol: 130,
@@ -850,10 +921,65 @@
         saveFormState();
       }
 
+      function renderYieldTable(peripheralCd34 = null, tbvLiters = null, patientWeight = null) {
+        yieldTableBody.textContent = '';
+        yieldEfficiencies.forEach((efficiency) => {
+          const row = document.createElement('tr');
+          const efficiencyHeader = document.createElement('th');
+          efficiencyHeader.scope = 'row';
+          efficiencyHeader.textContent = `${(efficiency * 100).toFixed(0)}%`;
+          row.appendChild(efficiencyHeader);
+
+          yieldBloodVolumeCounts.forEach((bloodVolumeCount) => {
+            const cell = document.createElement('td');
+            cell.textContent = peripheralCd34 === null
+              ? '--'
+              : (
+                peripheralCd34 * efficiency * tbvLiters * bloodVolumeCount / patientWeight
+              ).toFixed(1);
+            row.appendChild(cell);
+          });
+
+          yieldTableBody.appendChild(row);
+        });
+      }
+
+      function calculateYieldEstimate() {
+        yieldErrorBox.textContent = '';
+        renderYieldTable();
+
+        const peripheralCd34 = readNumber(peripheralCd34Input, true);
+        const height = readNumber(heightInput);
+        const patientWeight = readNumber(weightInput);
+        if (peripheralCd34 === null) {
+          yieldErrorBox.textContent = 'Enter a Peripheral CD34 value.';
+          return;
+        }
+        if ([peripheralCd34, height, patientWeight].some(Number.isNaN)) {
+          yieldErrorBox.textContent = 'Peripheral CD34 must be zero or greater; height and weight must be greater than zero.';
+          return;
+        }
+        if (height === null || patientWeight === null) {
+          yieldErrorBox.textContent = 'Enter patient height and weight in the top bar.';
+          return;
+        }
+
+        const tbvLiters = calculateTBV(genderInput.value, height, patientWeight);
+        renderYieldTable(peripheralCd34, tbvLiters, patientWeight);
+      }
+
+      function resetYieldEstimate() {
+        peripheralCd34Input.value = '';
+        yieldErrorBox.textContent = '';
+        renderYieldTable();
+        saveFormState();
+      }
+
       function resetAll() {
         resetForm();
         resetTargetEstimate();
         resetPrimeEstimate();
+        resetYieldEstimate();
         genderInput.value = 'male';
         heightInput.value = '';
         weightInput.value = '';
@@ -919,6 +1045,7 @@
         return true;
       }
 
+      renderYieldTable();
       const hasSavedFormState = restoreFormState();
       persistentFields.forEach((field) => {
         field.addEventListener('input', saveFormState);
@@ -933,6 +1060,8 @@
       resetTargetBtn.addEventListener('click', resetTargetEstimate);
       calculatePrimeBtn.addEventListener('click', calculateCustomPrime);
       resetPrimeBtn.addEventListener('click', resetPrimeEstimate);
+      calculateYieldBtn.addEventListener('click', calculateYieldEstimate);
+      resetYieldBtn.addEventListener('click', resetYieldEstimate);
 
       if (hasSavedFormState) {
         calculate();
@@ -947,6 +1076,10 @@
           (primeProcedureTypeInput.value === '1' || leucocytesInput.value.trim() !== '');
         if (hasPrimeInputs) {
           calculateCustomPrime();
+        }
+
+        if (hasPatientMeasurements && peripheralCd34Input.value.trim() !== '') {
+          calculateYieldEstimate();
         }
       }
     </script>

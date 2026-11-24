@@ -1,10 +1,11 @@
-const CACHE_NAME = 'tbv-calculator-v3';
+const CACHE_NAME = 'tbv-calculator-v4';
 const PAGE_URL = './index.html';
 const APP_SHELL = [
   PAGE_URL,
   './manifest.json',
   './Icon(192).jpg',
-  './Icon(512).jpg'
+  './Icon(512).jpg',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
