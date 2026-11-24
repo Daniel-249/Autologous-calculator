@@ -7,7 +7,7 @@
     <title>Stem Cells</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/png" sizes="192x192" href="./Icon(192).png" />
-    <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="./apple-touch-icon.png" />
+    <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="./Icon(192).png" />
     <style>
       :root {
         --bg: #f4f7fb;
@@ -118,6 +118,10 @@
         color: var(--primary-dark);
       }
 
+      .app-header h1 {
+        margin: 0;
+      }
+
       .input-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -197,14 +201,16 @@
       #calculateBtn,
       #calculateTargetBtn,
       #calculatePrimeBtn,
-      #calculateYieldBtn {
+      #calculateYieldBtn,
+      #installPwaBtn {
         background: var(--primary);
       }
 
       #calculateBtn:hover,
       #calculateTargetBtn:hover,
       #calculatePrimeBtn:hover,
-      #calculateYieldBtn:hover {
+      #calculateYieldBtn:hover,
+      #installPwaBtn:hover {
         background: var(--primary-dark);
       }
 
@@ -304,6 +310,48 @@
         background: #e9eef5;
       }
 
+      .app-footer {
+        padding: 14px 8px 8px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-align: center;
+      }
+
+      .app-footer-details {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 16px;
+      }
+
+      .app-footer-details strong {
+        color: var(--text);
+      }
+
+      .app-install {
+        margin-top: 12px;
+      }
+
+      #installPwaBtn {
+        width: auto;
+        min-width: 190px;
+      }
+
+      .app-install-status {
+        margin: 8px 0 0;
+        font-size: 0.8rem;
+      }
+
+      .app-footer a {
+        color: var(--primary-dark);
+      }
+
+      .app-footer-note {
+        margin: 8px 0 0;
+        font-size: 0.78rem;
+      }
+
       @media (max-width: 700px) {
         .tabs {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -368,6 +416,9 @@
   </head>
   <body>
     <main class="page">
+      <header class="card app-header">
+        <h1>Apheresis Calculation Panel</h1>
+      </header>
       <section class="card patient-panel" aria-labelledby="patientHeading">
         <h1 id="patientHeading">Patient</h1>
         <div class="patient-grid">
@@ -569,6 +620,19 @@
         </div>
       </section>
       </div>
+      <footer class="app-footer">
+        <div class="app-footer-details">
+          <strong>Apheresis Calculation Panel</strong>
+          <span>Author: Daniel Polach</span >
+          <span>Support: <a href="mailto:danielpolach249@gmail.com">danielpolach249@gmail.com</a></span>
+          <span>Version 1.16</span>
+          <span>Created 2026</span>
+        </div>
+        <div class="app-install">
+          <button type="button" id="installPwaBtn">Install as PWA</button>
+          <p id="installPwaStatus" class="app-install-status" role="status" aria-live="polite" hidden></p>
+        </div>
+       </footer>
     </main>
 
     <script>
@@ -1090,6 +1154,60 @@
           calculateYieldEstimate();
         }
       }
+    </script>
+    <script>
+      const installPwaButton = document.getElementById('installPwaBtn');
+      const installPwaStatus = document.getElementById('installPwaStatus');
+      let deferredInstallPrompt = null;
+
+      const isStandalonePwa =
+        window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      const isIosDevice =
+        /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (isStandalonePwa) {
+        installPwaButton.hidden = true;
+      } else {
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          deferredInstallPrompt = event;
+        });
+
+        installPwaButton.addEventListener('click', async () => {
+          installPwaStatus.hidden = true;
+
+          if (!deferredInstallPrompt) {
+            installPwaStatus.textContent = isIosDevice
+              ? 'In Safari, tap Share, then Add to Home Screen.'
+              : 'Use your browser menu to choose Install App or Add to Home Screen. Installation requires HTTPS.';
+            installPwaStatus.hidden = false;
+            return;
+          }
+
+          const installPrompt = deferredInstallPrompt;
+          deferredInstallPrompt = null;
+          try {
+            await installPrompt.prompt();
+            const { outcome } = await installPrompt.userChoice;
+            installPwaStatus.textContent = outcome === 'accepted'
+              ? 'Installation started.'
+              : 'Installation was dismissed.';
+            installPwaStatus.hidden = false;
+            if (outcome === 'accepted') installPwaButton.hidden = true;
+          } catch (error) {
+            console.error('Unable to open the PWA installation prompt.', error);
+            installPwaStatus.textContent = 'The install prompt could not be opened. Use your browser menu to install the app.';
+            installPwaStatus.hidden = false;
+          }
+        });
+      }
+
+      window.addEventListener('appinstalled', () => {
+        installPwaButton.hidden = true;
+        installPwaStatus.textContent = 'App installed.';
+        installPwaStatus.hidden = false;
+      });
     </script>
     <script>
       if ('serviceWorker' in navigator) {
