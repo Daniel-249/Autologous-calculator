@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tbv-calculator-v5';
+const CACHE_NAME = 'tbv-calculator-v6';
 const PAGE_URL = './index.html';
 const APP_SHELL = [
   PAGE_URL,
