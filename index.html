@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#000000" />
     <title>Stem Cells</title>
     <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="./Icon(192).jpg" />
     <style>
       :root {
         --bg: #f4f7fb;
@@ -72,8 +73,25 @@
 
       .patient-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 10px 12px;
+        align-items: end;
+      }
+
+      #resetAllBtn {
+        margin-top: 0;
+        background: #e5e7eb;
+        color: var(--text);
+      }
+
+      #resetAllBtn:hover {
+        background: #d1d5db;
+      }
+
+      .persistence-status {
+        margin-top: 10px;
+        color: #b91c1c;
+        font-size: 0.85rem;
       }
 
       .calculator-grid {
@@ -177,26 +195,26 @@
 
       #calculateBtn,
       #calculateTargetBtn,
-      #calculateCollectionBtn {
+      #calculatePrimeBtn {
         background: var(--primary);
       }
 
       #calculateBtn:hover,
       #calculateTargetBtn:hover,
-      #calculateCollectionBtn:hover {
+      #calculatePrimeBtn:hover {
         background: var(--primary-dark);
       }
 
       #resetBtn,
       #resetTargetBtn,
-      #resetCollectionBtn {
+      #resetPrimeBtn {
         background: #e5e7eb;
         color: var(--text);
       }
 
       #resetBtn:hover,
       #resetTargetBtn:hover,
-      #resetCollectionBtn:hover {
+      #resetPrimeBtn:hover {
         background: #d1d5db;
       }
 
@@ -244,10 +262,6 @@
         margin-top: 12px;
       }
 
-      .collection-result {
-        grid-column: 1 / -1;
-      }
-
       .result-label {
         line-height: 1.35;
       }
@@ -255,6 +269,16 @@
       .result-value {
         font-size: 1.35rem;
         overflow-wrap: anywhere;
+      }
+
+      .result-value.high-rbc-out {
+        color: #b91c1c;
+      }
+
+      @media (max-width: 700px) {
+        .patient-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
       }
 
       @media (max-width: 480px) {
@@ -267,7 +291,12 @@
         }
 
         .patient-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 8px;
+        }
+
+        #resetAllBtn {
+          grid-column: 1 / -1;
         }
 
         .input-grid {
@@ -316,18 +345,24 @@
             <label for="weight">Weight (kg)</label>
             <input id="weight" type="number" min="0" step="any" />
           </div>
+          <div class="form-group">
+            <label for="leucocytes">White Blood Cell Count</label>
+            <input id="leucocytes" type="number" min="0" step="any" />
+          </div>
+          <button type="button" id="resetAllBtn">Reset All</button>
         </div>
+        <div id="persistenceStatus" class="persistence-status" role="status" aria-live="polite" hidden></div>
       </section>
 
       <div class="tabs" role="tablist" aria-label="Calculators">
-        <button class="tab-button" id="tbvTab" type="button" role="tab" aria-selected="true" aria-controls="tbvPanel" tabindex="0">Total Blood Volume</button>
+        <button class="tab-button" id="tbvTab" type="button" role="tab" aria-selected="true" aria-controls="tbvPanel" tabindex="0">No. of Cycles</button>
         <button class="tab-button" id="apheresisTab" type="button" role="tab" aria-selected="false" aria-controls="apheresisPanel" tabindex="-1">Apheresis Estimate to Target</button>
-        <button class="tab-button" id="cellCollectionTab" type="button" role="tab" aria-selected="false" aria-controls="cellCollectionPanel" tabindex="-1">Total Cell Collection Estimate</button>
+        <button class="tab-button" id="cellCollectionTab" type="button" role="tab" aria-selected="false" aria-controls="cellCollectionPanel" tabindex="-1">Apheresis Custom Prime</button>
       </div>
 
       <div class="calculator-grid">
       <section class="card tab-panel" id="tbvPanel" role="tabpanel" aria-labelledby="tbvTab">
-        <h1>Total Blood Volume</h1>
+        <h1>No. of Cycles</h1>
         <div class="input-grid">
           <div class="form-group">
             <label for="procedureType">Procedure Type</label>
@@ -335,10 +370,6 @@
               <option value="1">Autologous (MM G-CSF only)</option>
               <option value="0">Autologous</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label for="leucocytes">White Blood Cell Count</label>
-            <input id="leucocytes" type="number" min="0" step="any" />
           </div>
           <div class="form-group">
             <label for="tbv">Total Blood Volume (mL)</label>
@@ -406,6 +437,10 @@
         <div class="weight-basis" id="weightBasisOutput" aria-live="polite">Weight Used: --</div>
         <div class="results" aria-live="polite">
           <div class="result">
+            <div class="result-label">Total Blood Volume</div>
+            <div class="result-value" id="targetTbvOutput">--</div>
+          </div>
+          <div class="result">
             <div class="result-label">BMI</div>
             <div class="result-value" id="bmiOutput">--</div>
           </div>
@@ -418,45 +453,46 @@
             <div class="result-value" id="adjustedWeightOutput">--</div>
           </div>
           <div class="result">
-            <div class="result-label">Total Blood Volume</div>
-            <div class="result-value" id="targetTbvOutput">--</div>
-          </div>
-          <div class="result">
             <div class="result-label">Blood To Be Processed</div>
             <div class="result-value" id="targetBloodProcessedOutput">--</div>
           </div>
           <div class="result">
-            <div class="result-label">Volumes Wanted</div>
+            <div class="result-label">Blood Volumes Estimate</div>
             <div class="result-value" id="volumesWantedOutput">--</div>
           </div>
         </div>
       </section>
 
       <section class="card tab-panel" id="cellCollectionPanel" role="tabpanel" aria-labelledby="cellCollectionTab" hidden>
-        <h1>Total Cell Collection Estimate</h1>
+        <h1>Apheresis Custom Prime</h1>
+
         <div class="input-grid">
           <div class="form-group">
-            <label for="sampleVolume">Sample Volume (mL)</label>
-            <input id="sampleVolume" type="number" min="0" step="any" />
+            <label for="primeProcedureType">Procedure Type</label>
+            <select id="primeProcedureType">
+              <option value="0">Autologous</option>
+              <option value="1" selected>Autologous (MM G-CSF Only)</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="sampleCellConcentration">Sample Stem Cells (million/L)</label>
-            <input id="sampleCellConcentration" type="number" min="0" step="any" />
-          </div>
-          <div class="form-group">
-            <label for="finalProductVolume">Final Product Volume (mL)</label>
-            <input id="finalProductVolume" type="number" min="0" step="any" />
+            <label for="patientHct">Patient HCT</label>
+            <input id="patientHct" type="number" min="0" step="any" />
           </div>
         </div>
+
         <div class="actions">
-          <button type="button" id="calculateCollectionBtn">Calculate Estimate</button>
-          <button type="button" id="resetCollectionBtn">Reset</button>
+          <button type="button" id="calculatePrimeBtn">Calculate Max RBC Out</button>
+          <button type="button" id="resetPrimeBtn">Reset</button>
         </div>
-        <div id="collectionError" class="error" role="alert"></div>
+        <div id="primeError" class="error" role="alert"></div>
         <div class="results" aria-live="polite">
-          <div class="result collection-result">
-            <div class="result-label">Stem Cells (million/kg)</div>
-            <div class="result-value" id="cellDoseOutput">--</div>
+          <div class="result">
+            <div class="result-label">Total Blood Volume</div>
+            <div class="result-value" id="primeTbvOutput">--</div>
+          </div>
+          <div class="result">
+            <div class="result-label">Max RBC Out</div>
+            <div class="result-value" id="maxRbcOutOutput">--</div>
           </div>
         </div>
       </section>
@@ -468,6 +504,10 @@
       const tabPanels = [...document.querySelectorAll('[role="tabpanel"]')];
       const calculateBtn = document.getElementById('calculateBtn');
       const resetBtn = document.getElementById('resetBtn');
+      const resetAllBtn = document.getElementById('resetAllBtn');
+      const persistenceStatus = document.getElementById('persistenceStatus');
+      const persistentFields = [...document.querySelectorAll('input[id], select[id]')];
+      const persistenceKey = 'tbv-calculator-form-v1';
       const procedureTypeInput = document.getElementById('procedureType');
       const leucocytesInput = document.getElementById('leucocytes');
       const tbvInput = document.getElementById('tbv');
@@ -495,15 +535,28 @@
       const targetTbvOutput = document.getElementById('targetTbvOutput');
       const targetBloodProcessedOutput = document.getElementById('targetBloodProcessedOutput');
       const volumesWantedOutput = document.getElementById('volumesWantedOutput');
-      const sampleVolumeInput = document.getElementById('sampleVolume');
-      const sampleCellConcentrationInput = document.getElementById('sampleCellConcentration');
-      const finalProductVolumeInput = document.getElementById('finalProductVolume');
-      const calculateCollectionBtn = document.getElementById('calculateCollectionBtn');
-      const resetCollectionBtn = document.getElementById('resetCollectionBtn');
-      const collectionErrorBox = document.getElementById('collectionError');
-      const cellDoseOutput = document.getElementById('cellDoseOutput');
+      const primeProcedureTypeInput = document.getElementById('primeProcedureType');
+      const patientHctInput = document.getElementById('patientHct');
+      const calculatePrimeBtn = document.getElementById('calculatePrimeBtn');
+      const resetPrimeBtn = document.getElementById('resetPrimeBtn');
+      const primeErrorBox = document.getElementById('primeError');
+      const primeTbvOutput = document.getElementById('primeTbvOutput');
+      const maxRbcOutOutput = document.getElementById('maxRbcOutOutput');
       const desktopLayout = window.matchMedia('(min-width: 1100px)');
       let activePanelId = 'tbvPanel';
+
+      const customPrimeConstants = {
+        kitWbVol: 130,
+        bloodWarmerVolume: 44,
+        acdRatio: 12,
+        packedRbcHct: 0.85,
+        mmGcsfOnlyRbcOffsetVolume: 8,
+        rbcPackExtraVolume: 46
+      };
+
+      customPrimeConstants.kitPackedRbcVolume =
+        customPrimeConstants.kitWbVol + customPrimeConstants.bloodWarmerVolume;
+
       const lookupData = {
         rowKeys: ['ROW1', 'ROW2', 'ROW3', 'ROW4', 'ROW5', 'ROW6', 'ROW7', 'ROW8', 'ROW9', 'ROW10'],
         columnKeys: ['COL1', 'COL2', 'COL3', 'COL4'],
@@ -625,6 +678,7 @@
 
         bloodVolumesOutput.textContent = resolvedBloodVolumes === null ? '--' : resolvedBloodVolumes.toFixed(2);
         bloodToBeProcessedOutput.textContent = bloodToBeProcessed === null ? '--' : `${bloodToBeProcessed.toFixed(0)} mL`;
+        saveFormState();
 
         if (leucocytes !== null) {
           const rowKey = getWbRow(leucocytes);
@@ -649,12 +703,12 @@
 
       function resetForm() {
         procedureTypeInput.value = '1';
-        leucocytesInput.value = '';
         tbvInput.value = '';
         bloodVolumesInput.value = '';
         bloodToBeProcessedInput.value = '';
         errorBox.textContent = '';
         clearResults();
+        saveFormState();
       }
 
       function clearTargetResults() {
@@ -675,9 +729,12 @@
         const measuredWeight = readNumber(weightInput);
         const cd34Target = readNumber(cd34TargetInput);
         const flowCytometryCount = readNumber(flowCytometryCountInput);
-        if ([height, measuredWeight, cd34Target, flowCytometryCount].some(Number.isNaN) ||
-            [height, measuredWeight, cd34Target, flowCytometryCount].some((value) => value === null)) {
-          targetErrorBox.textContent = 'Enter valid positive values for all fields.';
+        if ([height, measuredWeight, cd34Target, flowCytometryCount].some(Number.isNaN)) {
+          targetErrorBox.textContent = 'Entered values must be greater than zero.';
+          return;
+        }
+        if (height === null || measuredWeight === null) {
+          targetErrorBox.textContent = 'Enter valid positive values for height and weight.';
           return;
         }
 
@@ -705,17 +762,18 @@
           return;
         }
 
-        const bloodToBeProcessedLiters = cd34Target * weightForTarget / (flowCytometryCount * 0.32);
         const tbvLiters = calculateTBV(genderInput.value, height, measuredWeight);
-        const bloodToBeProcessedMl = bloodToBeProcessedLiters * 1000;
 
         weightBasisOutput.textContent = `Weight Used: ${weightBasis}`;
         bmiOutput.textContent = bmi.toFixed(2);
         idealWeightOutput.textContent = `${idealWeight.toFixed(2)} kg`;
         adjustedWeightOutput.textContent = `${adjustedWeight.toFixed(2)} kg`;
         targetTbvOutput.textContent = `${(tbvLiters * 1000).toFixed(0)} mL`;
-        targetBloodProcessedOutput.textContent = `${bloodToBeProcessedMl.toFixed(0)} mL`;
-        volumesWantedOutput.textContent = (bloodToBeProcessedLiters / tbvLiters).toFixed(2);
+        if (cd34Target !== null && flowCytometryCount !== null) {
+          const bloodToBeProcessedLiters = cd34Target * weightForTarget / (flowCytometryCount * 0.32);
+          targetBloodProcessedOutput.textContent = `${(bloodToBeProcessedLiters * 1000).toFixed(0)} mL`;
+          volumesWantedOutput.textContent = (bloodToBeProcessedLiters / tbvLiters).toFixed(2);
+        }
       }
 
       function resetTargetEstimate() {
@@ -723,48 +781,174 @@
         flowCytometryCountInput.value = '';
         targetErrorBox.textContent = '';
         clearTargetResults();
+        saveFormState();
       }
 
-      function clearCollectionResults() {
-        cellDoseOutput.textContent = '--';
+      function clearPrimeResults() {
+        primeTbvOutput.textContent = '--';
+        maxRbcOutOutput.textContent = '--';
+        maxRbcOutOutput.classList.remove('high-rbc-out');
       }
 
-      function calculateCollectionEstimate() {
-        collectionErrorBox.textContent = '';
-        clearCollectionResults();
+      function calculateCustomPrime() {
+        primeErrorBox.textContent = '';
+        clearPrimeResults();
 
-        const sampleVolume = readNumber(sampleVolumeInput);
-        const sampleCellConcentration = readNumber(sampleCellConcentrationInput);
-        const finalProductVolume = readNumber(finalProductVolumeInput);
+        const kitWbVol = customPrimeConstants.kitWbVol;
+        const bloodWarmerVol = customPrimeConstants.bloodWarmerVolume;
+        const acdRatio = customPrimeConstants.acdRatio;
+        const packedRbcHct = customPrimeConstants.packedRbcHct;
+        const isMmGcsfOnly = primeProcedureTypeInput.value === '1';
+        const wbc = isMmGcsfOnly ? null : readNumber(leucocytesInput);
+        const patientHct = readNumber(patientHctInput);
+        const height = readNumber(heightInput);
         const patientWeight = readNumber(weightInput);
-        const values = [sampleVolume, sampleCellConcentration, finalProductVolume, patientWeight];
+
+        const values = [
+          kitWbVol, bloodWarmerVol, acdRatio, packedRbcHct,
+          ...(isMmGcsfOnly ? [] : [wbc]),
+          patientHct, height, patientWeight
+        ];
         if (values.some((value) => value === null || Number.isNaN(value))) {
-          collectionErrorBox.textContent = 'Enter valid positive values for all fields.';
+          primeErrorBox.textContent = 'Enter valid values for all constants and required patient/prime inputs.';
           return;
         }
 
-        const sampleCellTotal = sampleVolume * sampleCellConcentration / 1000;
-        const measuredSampleConcentration = sampleCellTotal / (sampleVolume / 1000);
-        const finalProductCellTotal = finalProductVolume * measuredSampleConcentration / 1000;
-        const cellDose = finalProductCellTotal / patientWeight;
+        const tbvLiters = calculateTBV(genderInput.value, height, patientWeight);
+        const tbvMl = tbvLiters * 1000;
+        const anticoagulatedPatientHct = patientHct * (acdRatio / (acdRatio + 1));
 
-        cellDoseOutput.textContent = `${cellDose.toFixed(2)} million/kg`;
+        let rbcOffsetVolume = customPrimeConstants.mmGcsfOnlyRbcOffsetVolume;
+        if (!isMmGcsfOnly) {
+          const rowKey = getWbRow(wbc);
+          const columnKey = `COL${Number(primeProcedureTypeInput.value) + 1}`;
+          rbcOffsetVolume = lookupData.cells[rowKey]?.[columnKey]?.[1];
+        }
+        if (!Number.isFinite(rbcOffsetVolume)) {
+          primeErrorBox.textContent = 'The selected WBC/procedure does not have an RBC offset value.';
+          return;
+        }
+
+        const kitPackedRbcVolume = kitWbVol + bloodWarmerVol;
+        const kitPackedRbcVolumeMl = rbcOffsetVolume + customPrimeConstants.rbcPackExtraVolume;
+        const maxRbcOut = (
+          ((kitPackedRbcVolume * anticoagulatedPatientHct) +
+          (kitPackedRbcVolumeMl * packedRbcHct)) /
+          (tbvMl * anticoagulatedPatientHct)
+        ) * 100;
+
+        primeTbvOutput.textContent = `${tbvMl.toFixed(0)} mL`;
+        maxRbcOutOutput.textContent = `${maxRbcOut.toFixed(2)}%`;
+        maxRbcOutOutput.classList.toggle('high-rbc-out', maxRbcOut > 10);
       }
 
-      function resetCollectionEstimate() {
-        sampleVolumeInput.value = '';
-        sampleCellConcentrationInput.value = '';
-        finalProductVolumeInput.value = '';
-        collectionErrorBox.textContent = '';
-        clearCollectionResults();
+      function resetPrimeEstimate() {
+        primeProcedureTypeInput.value = '1';
+        patientHctInput.value = '';
+        primeErrorBox.textContent = '';
+        clearPrimeResults();
+        saveFormState();
       }
+
+      function resetAll() {
+        resetForm();
+        resetTargetEstimate();
+        resetPrimeEstimate();
+        genderInput.value = 'male';
+        heightInput.value = '';
+        weightInput.value = '';
+        leucocytesInput.value = '';
+        saveFormState();
+      }
+
+      function showPersistenceError(message) {
+        persistenceStatus.textContent = message;
+        persistenceStatus.hidden = false;
+      }
+
+      function saveFormState() {
+        const values = {};
+        persistentFields.forEach((field) => {
+          values[field.id] = field.value;
+        });
+
+        try {
+          localStorage.setItem(persistenceKey, JSON.stringify(values));
+          persistenceStatus.textContent = '';
+          persistenceStatus.hidden = true;
+        } catch (error) {
+          console.error('Unable to save calculator inputs on this device.', error);
+          showPersistenceError('Your inputs could not be saved on this device.');
+        }
+      }
+
+      function restoreFormState() {
+        let savedState;
+        try {
+          savedState = localStorage.getItem(persistenceKey);
+        } catch (error) {
+          console.error('Unable to access saved calculator inputs on this device.', error);
+          showPersistenceError('Saved inputs could not be accessed on this device.');
+          return false;
+        }
+
+        if (savedState === null) return false;
+
+        let values;
+        try {
+          values = JSON.parse(savedState);
+        } catch (error) {
+          console.error('Unable to parse saved calculator inputs.', error);
+          showPersistenceError('Saved inputs could not be read. Use Reset All to replace them.');
+          return false;
+        }
+
+        if (!values || typeof values !== 'object' || Array.isArray(values)) {
+          showPersistenceError('Saved inputs could not be read. Use Reset All to replace them.');
+          return false;
+        }
+
+        persistentFields.forEach((field) => {
+          const value = values[field.id];
+          if (typeof value !== 'string') return;
+          if (field.tagName === 'SELECT' && ![...field.options].some((option) => option.value === value)) {
+            return;
+          }
+          field.value = value;
+        });
+        return true;
+      }
+
+      const hasSavedFormState = restoreFormState();
+      persistentFields.forEach((field) => {
+        field.addEventListener('input', saveFormState);
+        field.addEventListener('change', saveFormState);
+      });
+      window.addEventListener('pagehide', saveFormState);
 
       calculateBtn.addEventListener('click', calculate);
       resetBtn.addEventListener('click', resetForm);
+      resetAllBtn.addEventListener('click', resetAll);
       calculateTargetBtn.addEventListener('click', calculateTargetEstimate);
       resetTargetBtn.addEventListener('click', resetTargetEstimate);
-      calculateCollectionBtn.addEventListener('click', calculateCollectionEstimate);
-      resetCollectionBtn.addEventListener('click', resetCollectionEstimate);
+      calculatePrimeBtn.addEventListener('click', calculateCustomPrime);
+      resetPrimeBtn.addEventListener('click', resetPrimeEstimate);
+
+      if (hasSavedFormState) {
+        calculate();
+
+        const hasPatientMeasurements = heightInput.value.trim() !== '' && weightInput.value.trim() !== '';
+        if (hasPatientMeasurements) {
+          calculateTargetEstimate();
+        }
+
+        const hasPrimeInputs = hasPatientMeasurements &&
+          patientHctInput.value.trim() !== '' &&
+          (primeProcedureTypeInput.value === '1' || leucocytesInput.value.trim() !== '');
+        if (hasPrimeInputs) {
+          calculateCustomPrime();
+        }
+      }
     </script>
     <script>
       if ('serviceWorker' in navigator) {
